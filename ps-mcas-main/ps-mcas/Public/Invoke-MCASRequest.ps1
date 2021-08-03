@@ -50,10 +50,12 @@
     Write-Verbose ('$tenant={0}' -f $tenant)
     
     $token = $Credential.GetNetworkCredential().Password
-    Write-Verbose "Authorization token length is {0} chars" -f $token.Length
+    #Write-Verbose "Authorization token length is {0} chars" -f ($token.Length)
 
     #$headers = 'Authorization = "Token {0}"' -f $token | ForEach-Object {"@{$_}"}    
-    $headers = @{Authorization="Token $token"} # need to test if this will work instead of above
+    $headers = @{
+        Authorization="Token $token"
+    } # need to test if this will work instead of above
     
     # Params for Invoke-WebRequest
     $requestParams = @{
@@ -63,6 +65,7 @@
         ContentType = $ContentType
         UseBasicParsing = $true
     }
+    Write-Output $requestParams
 
     if ($Method -eq 'Get') {
         Write-Verbose "A request using the Get HTTP method cannot have a message body."

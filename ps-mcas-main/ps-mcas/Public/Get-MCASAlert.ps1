@@ -140,7 +140,7 @@ function Get-MCASAlert {
         {
             try {
                 # Fetch the item by its id
-                $response = Invoke-MCASRestMethod -Credential $Credential -Path "/api/v1/alerts/$Identity/" -Method Get
+                $response = Invoke-MCASRequest -Credential $Credential -Path "/api/v1/alerts/$Identity/" -Method Get
             }
             catch {
                 throw "Error calling MCAS API. The exception was: $_"
@@ -210,7 +210,7 @@ function Get-MCASAlert {
 
             # Get the matching items and handle errors
             try {
-                $response = Invoke-MCASRestMethod -Credential $Credential -Path "/api/v1/alerts/" -Body $body -Method Post -FilterSet $filterSet
+                $response = Invoke-MCASRequest -Credential $Credential -Path "/api/v1/alerts/" -Body $body -Method Post
             }
             catch {
                 throw "Error calling MCAS API. The exception was: $_"
