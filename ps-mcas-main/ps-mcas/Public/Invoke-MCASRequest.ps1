@@ -46,25 +46,14 @@
         throw "That URI or URI/method combination is not supported. The supported URIs with supported methods for each are:`n{0}" -f ($MCAS_ALLOWED_VERBS | ConvertTo-Json)
     }
 
-    $tenant = ($Credential.GetNetworkCredential().username)
-    Write-Verbose ('$tenant={0}' -f $tenant)
-    
+    $tenant = $Credential.GetNetworkCredential().username
+
     $token = $Credential.GetNetworkCredential().Password
      
     $headers = @{
-        Authorization="Token $token"
-    }
-    
-    if ($Method -eq 'Get') {
-        Write-Verbose "A request using the Get HTTP method cannot have a message body."
-    }
-    else {
-        $jsonBody = $Body | ConvertTo-Json -Compress -Depth 2
-        Write-Verbose ('$jsonBody={0}' -f $jsonBody)
+        Authorization = "Token $token"
     }
 
-    Write-Verbose ('$RetryInterval={0}' -f $RetryInterval)
-    
     # Params for Invoke-WebRequest
     $requestParams = @{
         Uri = 'https://{0}{1}' -f $tenant,$Path
@@ -72,7 +61,11 @@
         Headers = $headers
         ContentType = $ContentType
         UseBasicParsing = $true
-        Body = $jsonBody
+    }
+
+    if ($Method -ne 'Get') {
+        $jsonBody = $Body | ConvertTo-Json -Compress -Depth 2
+        $requestParams.Add('Body',$jsonBody)
     }
 
     # This loop is the actual call to MCAS. It includes automatic retry if the API call is throttled
