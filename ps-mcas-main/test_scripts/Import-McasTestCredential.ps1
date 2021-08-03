@@ -1,1 +1,0 @@
-$CASCredential = Import-Clixml -Path C:\Users\jpoeppel\damdemo.cred 

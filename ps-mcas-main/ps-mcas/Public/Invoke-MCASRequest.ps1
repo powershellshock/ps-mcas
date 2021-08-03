@@ -50,23 +50,11 @@
     Write-Verbose ('$tenant={0}' -f $tenant)
     
     $token = $Credential.GetNetworkCredential().Password
-    #Write-Verbose "Authorization token length is {0} chars" -f ($token.Length)
-
-    #$headers = 'Authorization = "Token {0}"' -f $token | ForEach-Object {"@{$_}"}    
+     
     $headers = @{
         Authorization="Token $token"
-    } # need to test if this will work instead of above
-    
-    # Params for Invoke-WebRequest
-    $requestParams = @{
-        Uri = 'https://{0}{1}' -f $tenant,$Path
-        Method = $Method
-        Headers = $headers
-        ContentType = $ContentType
-        UseBasicParsing = $true
     }
-    Write-Output $requestParams
-
+    
     if ($Method -eq 'Get') {
         Write-Verbose "A request using the Get HTTP method cannot have a message body."
     }
@@ -76,6 +64,16 @@
     }
 
     Write-Verbose ('$RetryInterval={0}' -f $RetryInterval)
+    
+    # Params for Invoke-WebRequest
+    $requestParams = @{
+        Uri = 'https://{0}{1}' -f $tenant,$Path
+        Method = $Method
+        Headers = $headers
+        ContentType = $ContentType
+        UseBasicParsing = $true
+        Body = $jsonBody
+    }
 
     # This loop is the actual call to MCAS. It includes automatic retry if the API call is throttled
     do {
@@ -98,10 +96,6 @@
                     throw $_
                 }
             }
-
-        # Uncomment following two lines if you want to see raw responses in -Verbose output
-        #Write-Verbose 'Raw MCAS response to follow:'
-        #Write-Verbose $response
     }
     while ($retryCall)
 

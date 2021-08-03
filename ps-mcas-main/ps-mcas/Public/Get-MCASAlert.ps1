@@ -43,11 +43,14 @@ function Get-MCASAlert {
         [ValidatePattern({^[A-Fa-f0-9]{24}$})]
         [Alias("_id")]
         [string]$Identity,
+
+        # Filters results based on desired cri
+        [Parameter(ParameterSetName='List', Mandatory=$false)]
+        [string]$Filter,
         
         # Specifies the property by which to sort the results. Possible Values: 'Date','Severity', 'ResolutionStatus'.
         [Parameter(ParameterSetName='List', Mandatory=$false)]
-        #[ValidateSet('Date','Severity','ResolutionStatus')] # Additional sort fields removed by PG
-        [ValidateSet('Date')]
+        [ValidateSet('Date','Severity')]
         [string]$SortBy,
 
         # Specifies the direction in which to sort the results. Possible Values: 'Ascending','Descending'.
@@ -64,73 +67,6 @@ function Get-MCASAlert {
         [Parameter(ParameterSetName='List', Mandatory=$false)]
         [ValidateScript({$_ -gt -1})]
         [int]$Skip = 0
-
-
-        ##### FILTER PARAMS #####
-        <#
-        # Limits the results by severity. Possible Values: 'High','Medium','Low'.
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [ValidateNotNullOrEmpty()]
-        [severity_level[]]$Severity,
-
-        # Limits the results to items with a specific resolution status. Possible Values: 'Open','Dismissed','Resolved'.
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [ValidateNotNullOrEmpty()]
-        [resolution_status[]]$ResolutionStatus,
-
-        # Limits the results to items related to the specified user/users, such as 'alice@contoso.com','bob@contoso.com'.
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [ValidateNotNullOrEmpty()]
-        [Alias("User")]
-        [string[]]$UserName,
-
-        # Limits the results to items related to the specified service IDs, such as 11161,11770 (for Office 365 and Google Apps, respectively).
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [ValidateNotNullOrEmpty()]
-        [Alias("Service","Services")]
-        [int[]]$AppId,
-
-        # Limits the results to items related to the specified service names, such as 'Office_365' and 'Google_Apps'.
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [ValidateNotNullOrEmpty()]
-        [Alias("ServiceName","ServiceNames")]
-        [mcas_app[]]$AppName,
-
-        # Limits the results to items not related to the specified service ids, such as 11161,11770 (for Office 365 and Google Apps, respectively).
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [ValidateNotNullOrEmpty()]
-        [Alias("ServiceNot","ServicesNot")]
-        [int[]]$AppIdNot,
-
-        # Limits the results to items not related to the specified service names, such as 'Office_365' and 'Google_Apps'.
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [ValidateNotNullOrEmpty()]
-        [Alias("ServiceNameNot","ServiceNamesNot")]
-        [mcas_app[]]$AppNameNot,
-
-        # Limits the results to items related to the specified policy ID, such as 57595d0ba6b5d8cd76d6be8c.
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [ValidateNotNullOrEmpty()]
-        [string[]]$Policy,
-
-        # Limits the results to items with a specific risk score. The valid range is 1-10.
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [ValidateRange(0,10)]
-        [int[]]$Risk,
-
-        # Limits the results to items from a specific source.
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Source,
-
-        # Limits the results to read items.
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [switch]$Read,
-
-        # Limits the results to unread items.
-        [Parameter(ParameterSetName='List', Mandatory=$false)]
-        [switch]$Unread
-        #>
     )
     begin {
     }
@@ -168,45 +104,7 @@ function Get-MCASAlert {
             if ($SortDirection) {$body.Add('sortDirection',$SortDirection.TrimEnd('ending').ToLower())}
 
             # Add sort field to request body, if specified
-            if ($SortBy)
-            {
-                if ($SortBy -eq 'ResolutionStatus')
-                {
-                    $body.Add('sortField','status') # Patch to convert 'resolutionStatus' to 'status', because the API is not using them consistently, but we are
-                }
-                else
-                {
-                    $body.Add('sortField',$SortBy.ToLower())
-                }
-            }
-
-            <#
-            $filterSet = @() # Filter set array
-
-            # Additional parameter validations and mutexes
-            if ($AppName    -and ($AppId   -or $AppNameNot -or $AppIdNot)) {throw 'Cannot reconcile app parameters. Only use one of them at a time.'}
-            if ($AppId      -and ($AppName -or $AppNameNot -or $AppIdNot)) {throw 'Cannot reconcile app parameters. Only use one of them at a time.'}
-            if ($AppNameNot -and ($AppId   -or $AppName    -or $AppIdNot)) {throw 'Cannot reconcile app parameters. Only use one of them at a time.'}
-            if ($AppIdNot   -and ($AppId   -or $AppNameNot -or $AppName))  {throw 'Cannot reconcile app parameters. Only use one of them at a time.'}
-            if ($Read -and $Unread) {throw 'Cannot reconcile -Read and -Unread parameters. Only use one of them at a time.'}
-
-            # Value-mapped filters
-            if ($AppName)          {$filterSet += @{'entity.service'=   @{'eq'=([int[]]($AppName | ForEach-Object {$_ -as [int]}))}}}
-            if ($AppNameNot)       {$filterSet += @{'entity.service'=   @{'neq'=([int[]]($AppNameNot | ForEach-Object {$_ -as [int]}))}}}
-            if ($Severity)         {$filterSet += @{'severity'=         @{'eq'=([int[]]($Severity | ForEach-Object {$_ -as [int]}))}}}
-            if ($ResolutionStatus) {$filterSet += @{'resolutionStatus'= @{'eq'=([int[]]($ResolutionStatus | ForEach-Object {$_ -as [int]}))}}}
-
-            # Simple filters
-            if ($UserName)   {$filterSet += @{'entity.user'=    @{'eq'=$UserName}}}
-            if ($AppId)      {$filterSet += @{'entity.service'= @{'eq'=$AppId}}}
-            if ($AppIdNot)   {$filterSet += @{'entity.service'= @{'neq'=$AppIdNot}}}
-            if ($Policy)     {$filterSet += @{'entity.policy'=  @{'eq'=$Policy}}}
-            if ($Risk)       {$filterSet += @{'risk'=           @{'eq'=$Risk}}}
-            if ($AlertType)  {$filterSet += @{'id'=             @{'eq'=$AlertType}}}
-            if ($Source)     {$filterSet += @{'source'=         @{'eq'=$Source}}}
-            if ($Read)       {$filterSet += @{'read'=           @{'eq'=$true}}}
-            if ($Unread)     {$filterSet += @{'read'=           @{'eq'=$false}}}
-            #>
+            if ($SortBy) {$body.Add('sortField',$SortBy.ToLower())}
 
             # Get the matching items and handle errors
             try {
@@ -215,15 +113,15 @@ function Get-MCASAlert {
             catch {
                 throw "Error calling MCAS API. The exception was: $_"
             }
-
-            $response = $response.data
+            
+            $response = ($response.content | ConvertFrom-Json).data
 
             try {
                 Write-Verbose "Adding alias property to results, if appropriate"
                 $response = $response | Add-Member -MemberType AliasProperty -Name Identity -Value '_id' -PassThru
             }
             catch {}
-
+            
             $response
         }
     }

@@ -18,7 +18,7 @@ $MCAS_ALLOWED_VERBS = @{
     '/api/v1/activities/' = @('Get','Post')
     '/api/v1/alerts/' =     @('Get','Post')
     '/api/v1/discovery/' =  @('Get','Post','Put')
-    '/api/v1/subnet/' =     @('Get','Post','Delete')
+    '/api/subnet/' =     @('Get','Post','Delete')
     '/api/v1/entities/' =   @('Get','Post')
     '/api/v1/files/' =      @('Get','Post')
 }  
@@ -26,7 +26,7 @@ $MCAS_ALLOWED_VERBS = @{
 $MCAS_SORT_OPTIONS = @{
     '/api/v1/activities/' = @('date','created')         # https://docs.microsoft.com/en-us/cloud-app-security/api-activities-list
     '/api/v1/alerts/' =     @('date','severity')        # https://docs.microsoft.com/en-us/cloud-app-security/api-alerts-list
-    '/api/v1/subnet/' =     @('category','tags','name') # https://docs.microsoft.com/en-us/cloud-app-security/api-data-enrichment-list
+    '/api/subnet/' =     @('category','tags','name') # https://docs.microsoft.com/en-us/cloud-app-security/api-data-enrichment-list
     '/api/v1/entities/' =   @('date','severity')        # https://docs.microsoft.com/en-us/cloud-app-security/api-entities-list 
 }
 
