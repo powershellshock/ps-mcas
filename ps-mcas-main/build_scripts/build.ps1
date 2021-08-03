@@ -1,6 +1,6 @@
-$VersionNumber = "1.0.$env:GITHUB_RUN_NUMBER"
-$moduleName = 'PSChia'
-$homedirectory = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "PSChia"
+$VersionNumber = "4.0.$env:GITHUB_RUN_NUMBER"
+$moduleName = 'ps-mcas'
+$homedirectory = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath "ps-mcas"
 
 $ModuleNamewithext = $moduleName + ".psm1"
 $ManifesetName = $moduleName + ".psd1"
@@ -33,12 +33,12 @@ $manifestParameters = @{
      FormatsToProcess = $formatfiles
      ScriptsToProcess = $scriptFiles
      FunctionsToExport = $FunctionsToExport
-     Author = "Mrpig91"
-     Description = "A powershell module for communicating with Chia Coin RPC on Windows machines."
+     Author = "powershellshock"
+     Description = "Powershell module for Microsoft Cloud App Security"
 }
 
 New-ModuleManifest @manifestParameters
 
 Write-Host "Manifest Path Exists: $(Test-Path -Path $homedirectory\$ManifesetName)"
 
-Publish-Module -Path $homedirectory -NuGetApiKey $env:PWSHGALLERY -Tags "ChiaCoin"
+#Publish-Module -Path $homedirectory -NuGetApiKey $env:PWSHGALLERY -Tags "MCAS","Powershell","M365"
