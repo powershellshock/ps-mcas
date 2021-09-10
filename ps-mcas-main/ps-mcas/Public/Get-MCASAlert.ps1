@@ -44,7 +44,7 @@ function Get-MCASAlert {
         [Alias("_id")]
         [string]$Identity,
 
-        # Filters results based on desired cri
+        # Filters results based on desired criteria
         [Parameter(ParameterSetName='List', Mandatory=$false)]
         [string]$Filter,
         

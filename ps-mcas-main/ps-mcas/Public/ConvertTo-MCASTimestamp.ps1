@@ -18,7 +18,7 @@
     Monday, March 5, 2018 12:45:23 PM
 
 .FUNCTIONALITY
-    ConvertFrom-MCASTimestamp is intended to return the Powershell datetime of a timestamp value from MCAS.
+    ConvertFrom-MCASTimestamp is intended to return the MCAS timestamp (epoch milliseconds) of a Powershell datetime .
 #>
 function ConvertTo-MCASTimestamp {
     [CmdletBinding()]
